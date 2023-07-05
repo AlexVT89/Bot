@@ -1,0 +1,4 @@
+-U --pre aiogram
+dotenv
+asyncio
+requests

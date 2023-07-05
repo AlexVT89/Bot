@@ -30,6 +30,7 @@ router: Router = Router()
 async def process_start_command(message: Message, state: FSMContext):
     await state.clear()
     answer_start=await message.answer(text='Ну что, начнем?', reply_markup=keyboards.go_kb())
+    bot_answer.clear()
     bot_answer.append(answer_start)
 
     
@@ -38,6 +39,7 @@ async def process_start_command(message: Message, state: FSMContext):
 async def process_start_command(message: Message, state: FSMContext):
     await state.clear()
     ansewr_begin=await message.answer(text='Ну что, начнем?', reply_markup=keyboards.go_kb())
+    bot_answer.clear()
     bot_answer.append(ansewr_begin)
     
     
@@ -105,13 +107,14 @@ async def process_day(callback: CallbackQuery,state: FSMContext):
 
 #Клавиатура выбора туда обратно      
 @router.callback_query(Text(text=keyboards.list_day),StateFilter(FSMFillForm.fill_way_one_two)) 
-async def process_one_way(callback: CallbackQuery):
+async def process_one_way(callback: CallbackQuery,state: FSMContext):
     user_answer[callback.from_user.id]["date_departure"]["day"]= callback.data
     answer_way=await callback.message.answer("Выберете в одну сторону или в обе:", reply_markup=keyboards.way_kb())
     bot_answer.append(answer_way)
+    await state.set_state(FSMFillForm.fill_way)
 
 #Выдача билетов в один конец
-@router.callback_query(StateFilter(FSMFillForm.fill_date_departure_kb),Text(text="one_way"))
+@router.callback_query(Text(text="one_way"),StateFilter(FSMFillForm.fill_way))
 async def process_ticket_one_way(callback: CallbackQuery):
     print(user_answer)
     for i in bot_answer:
@@ -127,7 +130,7 @@ async def process_ticket_one_way(callback: CallbackQuery):
     
 
 #Хендлер календарь вылета год 
-@router.callback_query(Text(text="two_way"))
+@router.callback_query(Text(text="two_way"),StateFilter(FSMFillForm.fill_way))
 async def process_year_return(callback: CallbackQuery, state: FSMContext):
     answer_message_year = await callback.message.answer("Выберете год:", reply_markup=keyboards.year_kb())
     bot_answer.append(answer_message_year)
